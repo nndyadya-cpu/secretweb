@@ -173,32 +173,47 @@ document.addEventListener("wheel", (event) => {
 ========================= */
 
 updateProgress();
-// ===============================
-// SWIPE UNTUK HP
-// ===============================
+// TOMBOL NAVIGASI HP
 
-let touchStartX = 0;
-let touchEndX = 0;
+const navButtons = document.createElement("div");
+navButtons.innerHTML = `
+    <button id="prevBtn">←</button>
+    <button id="nextBtn">→</button>
+`;
 
-document.addEventListener("touchstart", function(e) {
-    touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
+document.body.appendChild(navButtons);
 
-document.addEventListener("touchend", function(e) {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-}, { passive: true });
-
-function handleSwipe() {
-    const swipeDistance = touchEndX - touchStartX;
-
-    // Swipe kiri → slide berikutnya
-    if (swipeDistance < -50) {
-        nextSlide();
+const buttonStyle = document.createElement("style");
+buttonStyle.innerHTML = `
+    #prevBtn, #nextBtn {
+        position: fixed;
+        bottom: 25px;
+        width: 48px;
+        height: 48px;
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 50%;
+        background: rgba(20,20,20,0.8);
+        color: white;
+        font-size: 22px;
+        cursor: pointer;
+        z-index: 9999;
+        backdrop-filter: blur(8px);
     }
 
-    // Swipe kanan → slide sebelumnya
-    if (swipeDistance > 50) {
-        prevSlide();
+    #prevBtn {
+        left: 25px;
     }
-}
+
+    #nextBtn {
+        right: 25px;
+    }
+
+    #prevBtn:active, #nextBtn:active {
+        transform: scale(0.9);
+    }
+`;
+
+document.head.appendChild(buttonStyle);
+
+document.getElementById("prevBtn").addEventListener("click", prevSlide);
+document.getElementById("nextBtn").addEventListener("click", nextSlide);
