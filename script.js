@@ -1,114 +1,349 @@
-// ==============================
-// TOMBOL NAVIGASI
-// ==============================
+const slides = document.querySelectorAll(".slide");
 
-const navigation = document.createElement("div");
-
-navigation.innerHTML = `
-    <button id="prevBtn">←</button>
-    <button id="nextBtn">→</button>
-`;
-
-document.body.appendChild(navigation);
-
-const style = document.createElement("style");
-
-style.textContent = `
-    #prevBtn,
-    #nextBtn {
-        position: fixed;
-        bottom: 30px;
-
-        width: 48px;
-        height: 48px;
-
-        border-radius: 50%;
-        border: 1px solid rgba(255,255,255,0.2);
-
-        background: rgba(10,10,10,0.75);
-        color: #e8e1dd;
-
-        font-size: 20px;
-        font-family: sans-serif;
-        font-weight: 300;
-
-        cursor: pointer;
-        z-index: 9999;
-
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-
-        transition: 0.25s ease;
-    }
-
-    #prevBtn {
-        left: 25px;
-    }
-
-    #nextBtn {
-        right: 25px;
-    }
-
-    #prevBtn:hover,
-    #nextBtn:hover {
-        background: rgba(255,255,255,0.08);
-        border-color: rgba(255,255,255,0.4);
-        transform: scale(1.08);
-    }
-
-    #prevBtn:active,
-    #nextBtn:active {
-        transform: scale(0.9);
-    }
-
-    @media (max-width: 600px) {
-        #prevBtn,
-        #nextBtn {
-            width: 48px;
-            height: 48px;
-            bottom: 22px;
-        }
-
-        #prevBtn {
-            left: 20px;
-        }
-
-        #nextBtn {
-            right: 20px;
-        }
-    }
-`;
-
-document.head.appendChild(style);
+const currentNumber = document.getElementById("current");
+const progressBar = document.getElementById("progressBar");
 
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 
-prevBtn.addEventListener("click", prevSlide);
-nextBtn.addEventListener("click", nextSlide);
+let currentSlide = 0;
+let isAnimating = false;
 
 
-// ==============================
-// ATUR TOMBOL SESUAI SLIDE
-// ==============================
+/* =========================
+   PINDAH SLIDE
+========================= */
+
+function showSlide(index, direction) {
+
+    if (isAnimating) return;
+
+    if (index < 0 || index >= slides.length) return;
+
+    if (index === currentSlide) return;
+
+    isAnimating = true;
+
+    const oldSlide = slides[currentSlide];
+    const newSlide = slides[index];
+
+    oldSlide.classList.remove("active");
+    oldSlide.classList.remove("previous");
+
+    if (direction === "prev") {
+        newSlide.classList.add("previous");
+    } else {
+        newSlide.classList.remove("previous");
+    }
+
+    newSlide.classList.add("active");
+
+    currentSlide = index;
+
+    updateProgress();
+    updateButtons();
+
+    setTimeout(function() {
+        isAnimating = false;
+    }, 650);
+}
+
+
+/* =========================
+   NEXT
+========================= */
+
+function nextSlide() {
+
+    if (currentSlide < slides.length - 1) {
+        showSlide(currentSlide + 1, "next");
+    }
+}
+
+
+/* =========================
+   BACK
+========================= */
+
+function previousSlide() {
+
+    if (currentSlide > 0) {
+        showSlide(currentSlide - 1, "prev");
+    }
+}
+
+
+/* =========================
+   TOMBOL
+========================= */
+
+nextBtn.addEventListener("click", function(event) {
+
+    event.stopPropagation();
+
+    nextSlide();
+
+});
+
+
+prevBtn.addEventListener("click", function(event) {
+
+    event.stopPropagation();
+
+    previousSlide();
+
+});
+
+
+/* =========================
+   TAMPILKAN TOMBOL
+========================= */
 
 function updateButtons() {
 
-    // Slide pertama
+    /* SLIDE 1 */
+
     if (currentSlide === 0) {
-        prevBtn.style.display = "none";
-        nextBtn.style.display = "block";
+
+        prevBtn.classList.add("hidden");
+
+        nextBtn.classList.remove("hidden");
+
     }
 
-    // Slide terakhir
+    /* SLIDE TERAKHIR */
     else if (currentSlide === slides.length - 1) {
-        prevBtn.style.display = "block";
-        nextBtn.style.display = "none";
+
+        prevBtn.classList.remove("hidden");
+
+        nextBtn.classList.add("hidden");
+
     }
 
-    // Slide tengah
+    /* SLIDE TENGAH */
     else {
-        prevBtn.style.display = "block";
-        nextBtn.style.display = "block";
+
+        prevBtn.classList.remove("hidden");
+
+        nextBtn.classList.remove("hidden");
+
     }
 }
+
+
+/* =========================
+   PROGRESS BAR
+========================= */
+
+function updateProgress() {
+
+    const number = currentSlide + 1;
+
+    currentNumber.textContent =
+        String(number).padStart(2, "0");
+
+
+    const percentage =
+        (number / slides.length) * 100;
+
+
+    progressBar.style.width =
+        percentage + "%";
+}
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener("keydown", function(event) {
+
+    if (
+        event.key === "ArrowRight" ||
+        event.key === "ArrowDown" ||
+        event.key === "Enter" ||
+        event.key === " "
+    ) {
+
+        event.preventDefault();
+
+        nextSlide();
+
+    }
+
+
+    if (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowUp"
+    ) {
+
+        event.preventDefault();
+
+        previousSlide();
+
+    }
+
+
+    if (event.key === "Home") {
+
+        event.preventDefault();
+
+        if (currentSlide !== 0) {
+            showSlide(0, "prev");
+        }
+
+    }
+
+
+    if (event.key === "End") {
+
+        event.preventDefault();
+
+        if (currentSlide !== slides.length - 1) {
+            showSlide(slides.length - 1, "next");
+        }
+
+    }
+
+
+    if (event.key.toLowerCase() === "r") {
+
+        event.preventDefault();
+
+        if (currentSlide !== 0) {
+            showSlide(0, "prev");
+        }
+
+    }
+
+});
+
+
+/* =========================
+   SWIPE HP
+========================= */
+
+let startX = 0;
+let startY = 0;
+
+
+document.addEventListener(
+    "touchstart",
+    function(event) {
+
+        startX =
+            event.changedTouches[0].screenX;
+
+        startY =
+            event.changedTouches[0].screenY;
+
+    }, {
+        passive: true
+    }
+);
+
+
+document.addEventListener(
+    "touchend",
+    function(event) {
+
+        const endX =
+            event.changedTouches[0].screenX;
+
+        const endY =
+            event.changedTouches[0].screenY;
+
+
+        const distanceX =
+            endX - startX;
+
+        const distanceY =
+            endY - startY;
+
+
+        /* Abaikan swipe vertikal */
+
+        if (
+            Math.abs(distanceX) <
+            Math.abs(distanceY)
+        ) {
+            return;
+        }
+
+
+        /* Swipe terlalu pendek */
+
+        if (
+            Math.abs(distanceX) < 60
+        ) {
+            return;
+        }
+
+
+        /* Geser kiri = NEXT */
+
+        if (distanceX < 0) {
+
+            nextSlide();
+
+        }
+
+
+        /* Geser kanan = BACK */
+        else {
+
+            previousSlide();
+
+        }
+
+    }, {
+        passive: true
+    }
+);
+
+
+/* =========================
+   MOUSE WHEEL
+========================= */
+
+let wheelLocked = false;
+
+
+document.addEventListener(
+    "wheel",
+    function(event) {
+
+        if (wheelLocked) return;
+
+        wheelLocked = true;
+
+
+        if (event.deltaY > 0) {
+
+            nextSlide();
+
+        } else if (event.deltaY < 0) {
+
+            previousSlide();
+
+        }
+
+
+        setTimeout(function() {
+
+            wheelLocked = false;
+
+        }, 700);
+
+    }, {
+        passive: true
+    }
+);
+
+
+/* =========================
+   MULAI
+========================= */
+
+updateProgress();
+updateButtons();
