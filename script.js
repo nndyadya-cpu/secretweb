@@ -173,16 +173,18 @@ document.addEventListener("wheel", (event) => {
 ========================= */
 
 updateProgress();
+// ===============================
 // SWIPE UNTUK HP
+// ===============================
 
 let touchStartX = 0;
 let touchEndX = 0;
 
-document.addEventListener("touchstart", function (e) {
+document.addEventListener("touchstart", function(e) {
     touchStartX = e.changedTouches[0].screenX;
 }, { passive: true });
 
-document.addEventListener("touchend", function (e) {
+document.addEventListener("touchend", function(e) {
     touchEndX = e.changedTouches[0].screenX;
     handleSwipe();
 }, { passive: true });
@@ -190,10 +192,12 @@ document.addEventListener("touchend", function (e) {
 function handleSwipe() {
     const swipeDistance = touchEndX - touchStartX;
 
+    // Swipe kiri → slide berikutnya
     if (swipeDistance < -50) {
         nextSlide();
     }
 
+    // Swipe kanan → slide sebelumnya
     if (swipeDistance > 50) {
         prevSlide();
     }
