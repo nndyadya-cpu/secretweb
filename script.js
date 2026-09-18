@@ -1,203 +1,89 @@
 const slides = document.querySelectorAll(".slide");
-const currentNumber = document.getElementById("current");
-const progressBar = document.getElementById("progressBar");
-
 let currentSlide = 0;
 let isAnimating = false;
 
-function updateSlide(newIndex, direction = 1) {
+// ==============================
+// TAMPILKAN SLIDE
+// ==============================
 
+function showSlide(index) {
     if (isAnimating) return;
-    if (newIndex < 0 || newIndex >= slides.length) return;
-    if (newIndex === currentSlide) return;
+
+    if (index < 0) {
+        index = slides.length - 1;
+    }
+
+    if (index >= slides.length) {
+        index = 0;
+    }
+
+    if (index === currentSlide) return;
 
     isAnimating = true;
 
-    const oldSlide = slides[currentSlide];
-    const newSlide = slides[newIndex];
+    slides[currentSlide].classList.remove("active");
 
-    oldSlide.classList.remove("active");
+    currentSlide = index;
 
-    if (direction > 0) {
-        oldSlide.classList.add("previous");
-        newSlide.style.transform = "translateX(45px)";
-    } else {
-        oldSlide.classList.remove("previous");
-        newSlide.style.transform = "translateX(-45px)";
-    }
+    slides[currentSlide].classList.add("active");
 
-    newSlide.classList.add("active");
-
-    requestAnimationFrame(() => {
-        newSlide.style.transform = "translateX(0)";
-    });
-
-    currentSlide = newIndex;
-
-    updateProgress();
+    updateCounter();
 
     setTimeout(() => {
-        oldSlide.classList.remove("previous");
-        newSlide.style.transform = "";
         isAnimating = false;
     }, 700);
 }
 
-
 function nextSlide() {
-    if (currentSlide < slides.length - 1) {
-        updateSlide(currentSlide + 1, 1);
-    }
+    showSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+    showSlide(currentSlide - 1);
 }
 
 
-function previousSlide() {
-    if (currentSlide > 0) {
-        updateSlide(currentSlide - 1, -1);
-    }
-}
+// ==============================
+// TOMBOL ← →
+// ==============================
 
+const navigation = document.createElement("div");
 
-function goToStart() {
-    if (currentSlide !== 0) {
-        updateSlide(0, -1);
-    }
-}
-
-
-function goToEnd() {
-    if (currentSlide !== slides.length - 1) {
-        updateSlide(slides.length - 1, 1);
-    }
-}
-
-
-function restart() {
-    if (currentSlide === 0) return;
-
-    slides.forEach(slide => {
-        slide.classList.remove("active", "previous");
-        slide.style.transform = "";
-    });
-
-    currentSlide = 0;
-
-    slides[0].classList.add("active");
-
-    updateProgress();
-}
-
-
-function updateProgress() {
-
-    const number = String(currentSlide + 1).padStart(2, "0");
-
-    currentNumber.textContent = number;
-
-    const percentage =
-        ((currentSlide + 1) / slides.length) * 100;
-
-    progressBar.style.width = `${percentage}%`;
-}
-
-
-/* =========================
-   KEYBOARD CONTROL
-========================= */
-
-document.addEventListener("keydown", (event) => {
-
-    switch (event.key) {
-
-        case "ArrowRight":
-        case "ArrowDown":
-        case "Enter":
-        case " ":
-            event.preventDefault();
-            nextSlide();
-            break;
-
-        case "ArrowLeft":
-        case "ArrowUp":
-            event.preventDefault();
-            previousSlide();
-            break;
-
-        case "Home":
-            event.preventDefault();
-            goToStart();
-            break;
-
-        case "End":
-            event.preventDefault();
-            goToEnd();
-            break;
-
-        case "r":
-        case "R":
-            event.preventDefault();
-            restart();
-            break;
-    }
-});
-
-
-/* =========================
-   MOUSE WHEEL
-   tetap tersedia, tetapi
-   keyboard menjadi kontrol utama
-========================= */
-
-let wheelCooldown = false;
-
-document.addEventListener("wheel", (event) => {
-
-    if (wheelCooldown) return;
-
-    wheelCooldown = true;
-
-    if (event.deltaY > 0) {
-        nextSlide();
-    } else {
-        previousSlide();
-    }
-
-    setTimeout(() => {
-        wheelCooldown = false;
-    }, 800);
-});
-
-
-/* =========================
-   INITIALIZE
-========================= */
-
-updateProgress();
-// TOMBOL NAVIGASI HP
-
-const navButtons = document.createElement("div");
-navButtons.innerHTML = `
+navigation.innerHTML = `
     <button id="prevBtn">←</button>
     <button id="nextBtn">→</button>
 `;
 
-document.body.appendChild(navButtons);
+document.body.appendChild(navigation);
 
-const buttonStyle = document.createElement("style");
-buttonStyle.innerHTML = `
-    #prevBtn, #nextBtn {
+const style = document.createElement("style");
+
+style.textContent = `
+    #prevBtn,
+    #nextBtn {
         position: fixed;
-        bottom: 25px;
+        bottom: 30px;
+
         width: 48px;
         height: 48px;
-        border: 1px solid rgba(255,255,255,0.25);
+
         border-radius: 50%;
-        background: rgba(20,20,20,0.8);
-        color: white;
-        font-size: 22px;
+        border: 1px solid rgba(255,255,255,0.2);
+
+        background: rgba(10,10,10,0.75);
+        color: #e8e1dd;
+
+        font-size: 20px;
+        font-family: sans-serif;
+        font-weight: 300;
+
         cursor: pointer;
         z-index: 9999;
-        backdrop-filter: blur(8px);
+
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
+        transition: 0.25s ease;
     }
 
     #prevBtn {
@@ -208,12 +94,140 @@ buttonStyle.innerHTML = `
         right: 25px;
     }
 
-    #prevBtn:active, #nextBtn:active {
+    #prevBtn:hover,
+    #nextBtn:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.4);
+        transform: scale(1.08);
+    }
+
+    #prevBtn:active,
+    #nextBtn:active {
         transform: scale(0.9);
+    }
+
+    @media (max-width: 600px) {
+        #prevBtn,
+        #nextBtn {
+            width: 48px;
+            height: 48px;
+            bottom: 22px;
+        }
+
+        #prevBtn {
+            left: 20px;
+        }
+
+        #nextBtn {
+            right: 20px;
+        }
     }
 `;
 
-document.head.appendChild(buttonStyle);
+document.head.appendChild(style);
 
 document.getElementById("prevBtn").addEventListener("click", prevSlide);
 document.getElementById("nextBtn").addEventListener("click", nextSlide);
+
+
+// ==============================
+// COUNTER SLIDE
+// ==============================
+
+function updateCounter() {
+    const counter = document.querySelector("#currentSlide, #current");
+
+    if (counter) {
+        counter.textContent =
+            String(currentSlide + 1).padStart(2, "0");
+    }
+}
+
+
+// ==============================
+// KEYBOARD
+// ==============================
+
+document.addEventListener("keydown", function(event) {
+
+    if (
+        event.key === "ArrowRight" ||
+        event.key === "ArrowDown" ||
+        event.key === "Enter" ||
+        event.key === " "
+    ) {
+        event.preventDefault();
+        nextSlide();
+    }
+
+    if (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowUp"
+    ) {
+        event.preventDefault();
+        prevSlide();
+    }
+
+    if (event.key === "Home") {
+        showSlide(0);
+    }
+
+    if (event.key === "End") {
+        showSlide(slides.length - 1);
+    }
+
+    if (event.key.toLowerCase() === "r") {
+        showSlide(0);
+    }
+});
+
+
+// ==============================
+// SWIPE HP
+// ==============================
+
+let touchStartX = 0;
+
+document.addEventListener("touchstart", function(event) {
+    touchStartX = event.changedTouches[0].screenX;
+}, { passive: true });
+
+document.addEventListener("touchend", function(event) {
+
+    const touchEndX = event.changedTouches[0].screenX;
+    const distance = touchEndX - touchStartX;
+
+    if (Math.abs(distance) < 60) return;
+
+    if (distance < 0) {
+        nextSlide();
+    } else {
+        prevSlide();
+    }
+
+}, { passive: true });
+
+
+// ==============================
+// MOUSE WHEEL
+// ==============================
+
+let wheelCooldown = false;
+
+document.addEventListener("wheel", function(event) {
+
+    if (wheelCooldown) return;
+
+    wheelCooldown = true;
+
+    if (event.deltaY > 0) {
+        nextSlide();
+    } else {
+        prevSlide();
+    }
+
+    setTimeout(() => {
+        wheelCooldown = false;
+    }, 700);
+
+}, { passive: true });
